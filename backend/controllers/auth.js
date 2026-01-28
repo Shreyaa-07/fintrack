@@ -34,6 +34,10 @@ exports.register = async (req, res) => {
             });
         }
     } catch (error) {
+        if (error.name === 'ValidationError') {
+            const message = Object.values(error.errors).map(val => val.message)[0];
+            return res.status(400).json({ message });
+        }
         res.status(500).json({ message: 'Server Error', error: error.message });
     }
 };
@@ -42,6 +46,10 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
 
     try {
+        if (!email || !password) {
+             return res.status(400).json({ message: 'Please provide email and password' });
+        }
+
         // Find user by email and include password
         const user = await User.findOne({ email }).select('+password');
 
